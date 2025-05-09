@@ -4,19 +4,24 @@
 
 #include "ThreadPool.h"
 
-int main()
+int main(int argc, char *argv[])
 {
-    
-    ThreadPool pool(4);
+    if(argc != 2){
+        std::cerr << "Usage: " << argv[0] << " <nums>." << std::endl;
+        return 1;
+    }
+    ThreadPool pool(std::thread::hardware_concurrency());
     std::vector< std::future<int> > results;
 
-    for(int i = 0; i < 8; ++i) {
+    auto num = std::stoi(argv[1]);
+
+    for(int i = 0; i < num; ++i) {
         results.emplace_back(
             pool.enqueue([i] {
                 std::cout << "hello " << i << std::endl;
-                std::this_thread::sleep_for(std::chrono::seconds(1));
+                std::this_thread::sleep_for(std::chrono::microseconds(100));
                 std::cout << "world " << i << std::endl;
-                return i*i;
+                return i + 1;
             })
         );
     }

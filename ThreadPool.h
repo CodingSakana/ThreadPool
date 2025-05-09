@@ -63,7 +63,7 @@ template<class F, class... Args>
 auto ThreadPool::enqueue(F&& f, Args&&... args) 
     -> std::future<std::invoke_result_t<F, Args...>>    // 相当于 C++11::  typename std::result_of<F(Args...)>::type                             
     {                                                   // 编译期推导F(Args...)的返回类型 注意不是f(args...) 这个是运行期的对象参数
-    using return_type = std::invoke_result_t<F, Args>;
+    using return_type = std::invoke_result_t<F, Args...>;
     // C++11::   using return_type = typename std::result_of<F(Args...)>::type;
 
                                                                         // packaged_task 封装函数相当于把参数解决掉了
@@ -80,7 +80,7 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
             throw std::runtime_error("enqueue on stopped ThreadPool");
 
         tasks.emplace([task](){ (*task)(); });  // 这个 lambda式 符合 void() 的签名 所以可以加入 std::queue< std::function<void()> >
-                                                // lambda式 为了解决 packaged_task<return_type()> 的返回值
+                                                // lambda式 为了解决 packaged_task<return_type()> 的返回值 期望的返回值是void
     }
     condition.notify_one();
     return res;
